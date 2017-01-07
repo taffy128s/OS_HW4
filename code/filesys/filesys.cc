@@ -78,6 +78,8 @@
 //	"format" -- should we initialize the disk?
 //----------------------------------------------------------------------
 
+static const int TransferSize = 128;
+
 FileSystem::FileSystem(bool format)
 { 
     DEBUG(dbgFile, "Initializing the file system.");
@@ -233,8 +235,7 @@ FileSystem::Create(char *name, int initialSize)
 //	"name" -- the text name of the file to be opened
 //----------------------------------------------------------------------
 
-OpenFile *
-FileSystem::Open(char *name)
+OpenFile *FileSystem::Open(char *name)
 { 
     Directory *directory = new Directory(NumDirEntries);
     OpenFile *openFile = NULL;
@@ -247,6 +248,28 @@ FileSystem::Open(char *name)
 	openFile = new OpenFile(sector);	// name was found in directory 
     delete directory;
     return openFile;				// return NULL if not found
+}
+
+int FileSystem::myOpen(char *name) {
+    OpenFile *openFile = Open(name);
+    if (openFile == NULL) return 0;
+    else {
+        this->openFile = openFile;
+        return 1;
+    }
+}
+
+int FileSystem::Read(char *buffer, int size, int id) {
+    return openFile->Read(buffer, size);
+}
+
+int FileSystem::Write(char *buffer, int size, int id) {
+    return openFile->Write(buffer, size);
+}
+
+int FileSystem::Close(int id) {
+    delete openFile;
+    return 1;
 }
 
 //----------------------------------------------------------------------

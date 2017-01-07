@@ -95,9 +95,16 @@ class Interrupt {
     void Halt(); 		// quit and print out stats
 
     void PrintInt(int number);
-	#ifdef FILESYS_STUB
-	int CreateFile(char *filename);
-	#endif 
+	
+	int CreateFile(char *filename, int size);
+    
+    int myOpen(char *filename);
+    
+    int Read(char *buffer, int size, int id);
+    
+    int Write(char *buffer, int size, int id);
+    
+    int Close(int id);
 
     void YieldOnReturn();	// cause a context switch on return 
 				// from an interrupt handler

@@ -48,9 +48,16 @@ class Kernel {
     void NetworkTest();         // interactive 2-machine network test
 	Thread* getThread(int threadID){return t[threadID];}    
 
-	#ifdef FILESYS_STUB	
-	int CreateFile(char* filename); // fileSystem call
-	#endif
+
+	int CreateFile(char* filename, int size); // fileSystem call
+    
+    int myOpen(char *filename);
+    
+    int Read(char *buffer, int size, int id);
+    
+    int Write(char *buffer, int size, int id);
+    
+    int Close(int id);
 
 // These are public for notational convenience; really, 
 // they're global variables used everywhere.
