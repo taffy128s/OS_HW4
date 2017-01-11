@@ -155,7 +155,7 @@ Print(char *name)
 static void
 CreateDirectory(char *name)
 {
-	// MP4 Assignment
+	// MP4
 }
 
 //----------------------------------------------------------------------

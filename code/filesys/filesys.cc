@@ -62,7 +62,7 @@
 // supports extensible files, the directory size sets the maximum number 
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
-#define NumDirEntries 		10
+#define NumDirEntries 		64
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
 //----------------------------------------------------------------------
@@ -204,21 +204,21 @@ FileSystem::Create(char *name, int initialSize)
         sector = freeMap->FindAndSet();	// find a sector to hold the file header
     	if (sector == -1) 		
             success = FALSE;		// no free block for file header 
-        else if (!directory->Add(name, sector))
+        else if (!directory->Add(name, sector, false))
             success = FALSE;	// no space in directory
-	else {
+        else {
     	    hdr = new FileHeader;
-	    if (!hdr->Allocate(freeMap, initialSize))
+            if (!hdr->Allocate(freeMap, initialSize))
             	success = FALSE;	// no space on disk for data
-	    else {	
-	    	success = TRUE;
-		// everthing worked, flush all changes back to disk
+            else {	
+                success = TRUE;
+                // everthing worked, flush all changes back to disk
     	    	hdr->WriteBack(sector); 		
     	    	directory->WriteBack(directoryFile);
     	    	freeMap->WriteBack(freeMapFile);
-	    }
+            }
             delete hdr;
-	}
+        }
         delete freeMap;
     }
     delete directory;
