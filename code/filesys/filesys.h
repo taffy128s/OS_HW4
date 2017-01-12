@@ -79,6 +79,8 @@ class FileSystem {
 
     bool Create(char *name, int initialSize);  	
 					// Create a file (UNIX creat)
+                    
+    bool CreateDir(char *name);
 
     OpenFile* Open(char *name); 	// Open a file (UNIX open)
     
@@ -92,7 +94,9 @@ class FileSystem {
 
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 
-    void List();			// List all the files in the file system
+    void List(char *listDirectoryName);			// List all the files in the file system
+    
+    void recurList(char *listDirectoryName);
 
     void Print();			// List all the files and their contents
 

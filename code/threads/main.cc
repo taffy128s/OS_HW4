@@ -155,7 +155,8 @@ Print(char *name)
 static void
 CreateDirectory(char *name)
 {
-	// MP4
+	if (!kernel->fileSystem->CreateDir(name))
+       printf("CreateDirectory: couldn't create directory %s\n", name); 
 }
 
 //----------------------------------------------------------------------
@@ -318,7 +319,10 @@ main(int argc, char **argv)
 		kernel->fileSystem->Print();
     }
     if (dirListFlag) {
-		kernel->fileSystem->List();
+        if (recursiveListFlag) 
+            kernel->fileSystem->recurList(listDirectoryName);
+		else 
+            kernel->fileSystem->List(listDirectoryName);
     }
 	if (mkdirFlag) {
 		// MP4 mod tag
