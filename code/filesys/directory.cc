@@ -1,4 +1,4 @@
-// directory.cc 
+// directory.cc
 //	Routines to manage a directory of file names.
 //
 //	The directory is a table of fixed length entries; each
@@ -16,7 +16,7 @@
 //	entries in the directory are used, no more files can be created.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -38,14 +38,14 @@
 Directory::Directory(int size)
 {
     table = new DirectoryEntry[size];
-	
+
 	// MP4 mod tag
 	memset(table, 0, sizeof(DirectoryEntry) * size);  // dummy operation to keep valgrind happy
-	
+
     tableSize = size;
     for (int i = 0; i < tableSize; i++)
         table[i].inUse = FALSE;
-        
+
 }
 
 //----------------------------------------------------------------------
@@ -54,9 +54,9 @@ Directory::Directory(int size)
 //----------------------------------------------------------------------
 
 Directory::~Directory()
-{ 
+{
     delete [] table;
-} 
+}
 
 //----------------------------------------------------------------------
 // Directory::FetchFrom
@@ -104,7 +104,7 @@ Directory::FindIndex(char *name)
 //----------------------------------------------------------------------
 // Directory::Find
 // 	Look up file name in directory, and return the disk sector number
-//	where the file's header is stored. Return -1 if the name isn't 
+//	where the file's header is stored. Return -1 if the name isn't
 //	in the directory.
 //
 //	"name" -- the file name to look up
@@ -161,7 +161,7 @@ Directory::Find(char *name)
 
 bool
 Directory::Add(char *name, int newSector, char inType)
-{ 
+{
     if (Find(name) != -1)
         return FALSE;
     char nameWithOnlyPath[256] = {0};
@@ -210,14 +210,14 @@ Directory::Add(char *name, int newSector, char inType)
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
-//	return FALSE if the file isn't in the directory. 
+//	return FALSE if the file isn't in the directory.
 //
 //	"name" -- the file name to be removed
 //----------------------------------------------------------------------
 
 bool
 Directory::Remove(char *name)
-{ 
+{
     if (Find(name) == -1)
         return FALSE;
     char nameWithOnlyPath[256] = {0};
@@ -240,7 +240,7 @@ Directory::Remove(char *name)
         Directory *nextDir = new Directory(NumDirEntries);
         nextDir->FetchFrom(openNextDir);
         int idx = nextDir->FindIndex(nameWithOnlyFile);
-        if (idx == -1) 
+        if (idx == -1)
             return FALSE;
         nextDir->table[idx].inUse = FALSE;
         nextDir->WriteBack(openNextDir);
@@ -256,9 +256,34 @@ Directory::Remove(char *name)
     }
 }
 
+void Directory::RecurRemove(PersistentBitmap *freeMap) {
+    for (int i = 0; i < NumDirEntries; i++) {
+        if (table[i].inUse) {
+            if (table[i].type == 'D') {
+                OpenFile *dirFile = new OpenFile(table[i].sector);
+                Directory *dir = new Directory(NumDirEntries);
+                dir->FetchFrom(dirFile);
+                dir->RecurRemove(freeMap);
+                delete dirFile;
+                delete dir;
+            }
+            FileHeader *fileheader = new FileHeader;
+            fileheader->FetchFrom(table[i].sector);
+            fileheader->Deallocate(freeMap);
+            freeMap->Clear(table[i].sector);
+            delete fileheader;
+            delete freeMap;
+        }
+    }
+}
+
+void Directory::deactiveEntry(int idx) {
+    table[idx].inUse = FALSE;
+}
+
 //----------------------------------------------------------------------
 // Directory::List
-// 	List all the file names in the directory. 
+// 	List all the file names in the directory.
 //----------------------------------------------------------------------
 
 void
@@ -294,7 +319,7 @@ void Directory::recurList(int depth) {
 
 void
 Directory::Print()
-{ 
+{
     FileHeader *hdr = new FileHeader;
 
     printf("Directory contents:\n");
