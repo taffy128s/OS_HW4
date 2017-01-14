@@ -126,6 +126,7 @@ FileHeader::Deallocate(PersistentBitmap *freeMap)
             ASSERT(freeMap->Test((int) buf[j]));
             freeMap->Clear((int) buf[j]);
         }
+        freeMap->Clear(dataSectorLists[i]);
         delete [] buf;
     }
 }
