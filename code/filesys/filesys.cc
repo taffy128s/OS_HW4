@@ -366,16 +366,22 @@ void FileSystem::RecurRemove(char *name) {
         nameWithOnlyPath[i] = name[i];
     for (int i = slashIdx + 1; i < len; i++)
         nameWithOnlyFile[tempIdx++] = name[i];
-    int upperDirSector = directory->Find(nameWithOnlyPath);
-    OpenFile *upperDirFile = new OpenFile(upperDirSector);
-    Directory *upperDir = new Directory(NumDirEntries);
-    upperDir->FetchFrom(upperDirFile);
-    int idx = upperDir->FindIndex(nameWithOnlyFile);
-    upperDir->deactiveEntry(idx);
-    upperDir->WriteBack(upperDirFile);
+    if (nameWithOnlyPath[0] != 0) {
+        int upperDirSector = directory->Find(nameWithOnlyPath);
+        OpenFile *upperDirFile = new OpenFile(upperDirSector);
+        Directory *upperDir = new Directory(NumDirEntries);
+        upperDir->FetchFrom(upperDirFile);
+        int idx = upperDir->FindIndex(nameWithOnlyFile);
+        upperDir->deactiveEntry(idx);
+        upperDir->WriteBack(upperDirFile);
+        delete upperDirFile;
+        delete upperDir;
+    } else {
+        int idx = directory->FindIndex(nameWithOnlyFile);
+        directory->deactiveEntry(idx);
+        directory->WriteBack(directoryFile);
+    }
 
-    delete upperDirFile;
-    delete upperDir;
     delete fileHdr;
     delete freeMap;
     delete directory;
