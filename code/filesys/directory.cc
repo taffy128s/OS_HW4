@@ -259,6 +259,7 @@ Directory::Remove(char *name)
 void Directory::RecurRemove(PersistentBitmap *freeMap) {
     for (int i = 0; i < NumDirEntries; i++) {
         if (table[i].inUse) {
+            //printf("%s\n", table[i].name);
             if (table[i].type == 'D') {
                 OpenFile *dirFile = new OpenFile(table[i].sector);
                 Directory *dir = new Directory(NumDirEntries);
@@ -272,7 +273,6 @@ void Directory::RecurRemove(PersistentBitmap *freeMap) {
             fileheader->Deallocate(freeMap);
             freeMap->Clear(table[i].sector);
             delete fileheader;
-            delete freeMap;
         }
     }
 }
